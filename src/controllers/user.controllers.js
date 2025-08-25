@@ -97,14 +97,16 @@ const loginUser = asyncHandler(async(req , res)=>{
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
     const options = {
-        httpOnly : true,
-        secure : true
-    }
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === "production", 
+    sameSite: "strict", 
+    path: "/", 
+  };
 
     return res
     .status(200)
-    .cookie("accessToken" , options , accessToken)
-    .cookie("refreshToken" , options, refreshToken)
+    .cookie("accessToken" ,accessToken , options)
+    .cookie("refreshToken" ,refreshToken , options)
     .json(
         new ApiResponse(
             200 ,
@@ -124,9 +126,11 @@ const logoutUser = asyncHandler(async(req , res)=>{
       new : true
     }
   )
- const options = {
+   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false, 
+    sameSite: "lax",
+    path: "/",
   };
 
 return res
@@ -137,13 +141,82 @@ return res
 
 })
 
+const userChangepassword = asyncHandler(async(req , res)=> {
+  const {oldPassword , newPassword} = req.body;
+  
+  const user = await User.findById(req.user?._id)
 
+  const isPasswordValid = await user.isPasswordCorrect(oldPassword);
 
+  if(!isPasswordValid){
+    throw new ApiError(403 , "Invalid password");
+  }
+
+  user.password = newPassword;
+  await user.save({validateBeforeSave : false})
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      "Password changed succesfully"
+    )
+  )
+
+})
+
+const updateUserDetails = asyncHandler(async(req , res)=>{
+  const {fullname , email} = req.body
+
+  if(!fullname || !email){
+    throw new ApiError(403 , "Fullname and email required");
+  }
+
+  const existedUser =  await User.findOne({email})
+  if(existedUser && existedUser._id.toString() !== req.user?._id.toString()){
+     throw new ApiError(400 , "email is already in use to another account");
+  }
+
+  const updateUser = await User.findByIdAndUpdate(req.user?._id, {
+    $set : {fullname , email}
+  },{
+    new : true,
+    runValidators : true
+  }).select("-password")
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      updateUser,
+      "User details update sucessfully"
+    )
+  )
+
+})
+
+const getCurrentUser = asyncHandler(async (req , res)=>{
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      req.user,
+      "User fetched sucessfully"
+    )
+  )
+})
 
 
 
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    userChangepassword,
+    updateUserDetails,
+    getCurrentUser
 }
