@@ -13,36 +13,53 @@ import { uploadOnCloudinary , deleteFromCloudinary } from "../utils/cloudinary.j
 // 6.search doctor by specalization
 // 7.get doctors availability
 
-const createDoctorProfile = asyncHandler(async(req , res)=>{
-    const {specalization , timeslot , fees , availability , hospital} = req.body;
-    if(!specalization ||!fees ||!hospital){
-        throw new ApiError(403 , "Credentials are required");
+const createDoctorProfile = asyncHandler(async (req, res) => {
+    try {
+        const { specalization, timeslot, fees, availability, hospital } = req.body;
+
+        if (!specalization || !fees || !hospital) {
+            throw new ApiError(403, "Credentials are required");
+        }
+
+        const avatarPathLocal = req.files?.avatar?.[0]?.path;
+        const avatar = avatarPathLocal ? await uploadOnCloudinary(avatarPathLocal) : null;
+
+        let parsedTimeslot = null;
+        if (timeslot) {
+            try {
+                parsedTimeslot = JSON.parse(timeslot); // Expecting: {"start":"10:00 AM","end":"12:00 AM"}
+            } catch (err) {
+                throw new ApiError(400, "Invalid timeslot format. Expected JSON with start and end.");
+            }
+        }
+
+        const doctor = await Doctor.create({
+            owner: req.user?._id,
+            specalization,
+            timeslot: parsedTimeslot,
+            fees,
+            availability,
+            hospital,
+           avatar: avatar?.url || null 
+        });
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                doctor,
+                "Doctor created successfully"
+            )
+        );
+
+    } catch (error) {
+        console.error(error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Something went wrong"
+        });
     }
+});
 
-    const avatarPathLocal = req.files?.avatar?.[0]?.path;
-
-    const avatar = await uploadOnCloudinary(avatarPathLocal);
-
-    const Doctor = await Doctor.create({
-        owner : req.user._id,
-        specalization,
-        timeslot,
-        fees,
-        availability,
-        hospital,
-        avatar 
-    })
-
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            Doctor,
-            "Doctor created Sucessfully"
-        )
-    )
-})
 
 const getAllDoctors = asyncHandler(async(req , res)=>{
     const doctors = await Doctor.find().populate("owner" , "fullname email username")
@@ -81,18 +98,16 @@ const getAllDoctorsById = asyncHandler(async(req , res)=>{
 
 })
 
-const updateDoctor = asyncHandler(async(req , res)=>{
-    const {specalization , timeslot , fees , availability , hospital} = req.body;
+const updateDoctor = asyncHandler(async (req, res) => {
+    const { specalization, timeslot, fees, availability, hospital } = req.body;
 
-    if(!specalization || !timeslot || !fees || !availability || !hospital){
-        throw new ApiError(403 , "Fields are required");
+    if (!specalization && !timeslot && !fees && !availability && !hospital) {
+        throw new ApiError(403, "Fields are required");
     }
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set: { specalization, timeslot, fees, availability, hospital }
-        },
+        req.params.id,  
+        { $set: { specalization, timeslot, fees, availability, hospital } },
         { new: true }
     );
 
@@ -100,46 +115,39 @@ const updateDoctor = asyncHandler(async(req , res)=>{
         throw new ApiError(404, "Doctor not found");
     }
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                updatedDoctor,
-                "Doctor updated successfully"
-            )
-        );
-})
+    return res.status(200).json(
+        new ApiResponse(200, updatedDoctor, "Doctor updated successfully")
+    );
+});
 
 const updateAvatar = asyncHandler(async (req, res) => {
   const avatarPathLocal = req.file?.path;
   if (!avatarPathLocal) {
     throw new ApiError(403, "Avatar upload path failed");
   }
-
-  const existingDoctor = await Doctor.findOne({ owner: req.user?._id });
+  const existingDoctor = await Doctor.findById(req.params.id);
   if (!existingDoctor) {
     throw new ApiError(404, "Doctor profile not found");
   }
 
-  const avatar = await uploadOnCloudinary(avatarPathLocal);
-  if (!avatar?.secure_url) {
+  const uploadedAvatar = await uploadOnCloudinary(avatarPathLocal);
+  if (!uploadedAvatar?.url) {  
     throw new ApiError(403, "Avatar upload failed");
   }
 
-
-  if (existingDoctor?.avatarPublic_Id) {
+  if (existingDoctor.avatarPublic_Id) {
     await deleteFromCloudinary(existingDoctor.avatarPublic_Id);
   }
 
-  existingDoctor.avatar = avatar.secure_url;
-  existingDoctor.avatarPublic_Id = avatar.public_id;
+  existingDoctor.avatar = uploadedAvatar.url; 
+  existingDoctor.avatarPublic_Id = uploadedAvatar.public_id;
   await existingDoctor.save();
 
   return res
     .status(200)
     .json(new ApiResponse(200, existingDoctor, "Doctor avatar updated successfully"));
 });
+
 
 const getDoctorBySpecalization = asyncHandler(async(req , res)=>{
     const {specalization} = req.body;

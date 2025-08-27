@@ -10,12 +10,11 @@ const doctorSchema = new Schema({
         type : String,
         required : true
     },
-    timeslot : [
-        {
-            start : {type : String},
-            end : {type : String}
-        }
-    ],
+    timeslot: {
+    start: { type: String, required: true },
+    end: { type: String, required: true }
+    },
+
     fees : {
         type : String,
         required : true

@@ -15,7 +15,8 @@ const uploadOnCloudinary = async (localfile) => {
         const response = await cloudinary.uploader.upload(localfile,{
             resource_type : "auto"
         })
-
+         
+         fs.unlinkSync(localfile); // delete temp file
         return {
             url : response.secure_url,
             public_id : response.public_id
