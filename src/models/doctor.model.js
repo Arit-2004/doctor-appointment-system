@@ -25,6 +25,10 @@ const doctorSchema = new Schema({
     }],
     hospital : {
         type : String
+    },
+    avatar : {
+        type : String, // cloudinary url
+        required : true
     }
 },{
     timestamps : true
