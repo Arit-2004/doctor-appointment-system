@@ -15,7 +15,7 @@ import { uploadOnCloudinary , deleteFromCloudinary } from "../utils/cloudinary.j
 
 const createDoctorProfile = asyncHandler(async (req, res) => {
     try {
-        const { specalization, timeslot, fees, availability, hospital } = req.body;
+        const { specalization, date ,timeslot, fees, availability, hospital } = req.body;
 
         if (!specalization || !fees || !hospital) {
             throw new ApiError(403, "Credentials are required");
@@ -37,6 +37,7 @@ const createDoctorProfile = asyncHandler(async (req, res) => {
             owner: req.user?._id,
             specalization,
             timeslot: parsedTimeslot,
+            date,
             fees,
             availability,
             hospital,
@@ -46,7 +47,7 @@ const createDoctorProfile = asyncHandler(async (req, res) => {
         return res.status(200).json(
             new ApiResponse(
                 200,
-                doctor,
+                doctor.toObject(),
                 "Doctor created successfully"
             )
         );
@@ -99,15 +100,15 @@ const getAllDoctorsById = asyncHandler(async(req , res)=>{
 })
 
 const updateDoctor = asyncHandler(async (req, res) => {
-    const { specalization, timeslot, fees, availability, hospital } = req.body;
+    const { specalization, date , timeslot, fees, availability, hospital } = req.body;
 
-    if (!specalization && !timeslot && !fees && !availability && !hospital) {
+    if (!specalization && !date && !timeslot && !fees && !availability && !hospital) {
         throw new ApiError(403, "Fields are required");
     }
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(
         req.params.id,  
-        { $set: { specalization, timeslot, fees, availability, hospital } },
+        { $set: { specalization, date , timeslot, fees, availability, hospital } },
         { new: true }
     );
 

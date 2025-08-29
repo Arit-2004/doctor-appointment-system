@@ -17,7 +17,7 @@ router.route("/book").post(bookAppointment)
 router.route("/:id/reschedule").patch(rescheduleAppointment)
 router.route("/:id/cancel").patch(cancelAppointment);
 router.route("/doctor/:doctorId").get(getAllAppointmentsOfDoctor);
-router.route("/:id/:patientId").get(getAllAppointmentsOfPatient)
+router.route("/patient/:patientId").get(getAllAppointmentsOfPatient)
 
 
 

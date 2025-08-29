@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseaggregatePaginate from "mongoose-aggregate-paginate-v2"
+import { type } from "os";
 
 const doctorSchema = new Schema({
     owner : {
@@ -10,6 +11,11 @@ const doctorSchema = new Schema({
         type : String,
         required : true
     },
+    date : {
+      type : Date,
+      required : true
+    },
+    
     timeslot: {
     start: { type: String, required: true },
     end: { type: String, required: true }

@@ -6,16 +6,17 @@ import { Appointment } from "../models/appointment.model.js";
 
 const bookAppointment = asyncHandler(async (req, res) => {
   const patientId = req.user?._id;
-  const { doctorId, date, timeslot, reason } = req.body;
+  const { doctorId, date , availability, timeslot, reason } = req.body;
 
   if (!patientId) throw new ApiError(403, "No patient found");
-  if (!doctorId || !date || !timeslot || !reason)
+  if (!doctorId || !date || !availability || !reason)
     throw new ApiError(403, "Fill all required fields");
 
   const appointment = await Appointment.create({
     patientId,
     doctorId,
     date,
+    availability,
     timeslot,
     reason,
   });
@@ -27,10 +28,10 @@ const bookAppointment = asyncHandler(async (req, res) => {
 
 const rescheduleAppointment = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { date, timeslot, reason } = req.body;
+  const { availability, date ,timeslot, reason } = req.body;
 
-  if (!date || !timeslot || !reason)
-    throw new ApiError(403, "Please provide new date, timeslot, and reason");
+  if (!availability || !date || !timeslot || !reason)
+    throw new ApiError(403, "Please provide new availability, date, timeslot, and reason");
 
   const appointment = await Appointment.findById(id);
   if (!appointment) throw new ApiError(404, "Appointment not found");
@@ -41,6 +42,7 @@ const rescheduleAppointment = asyncHandler(async (req, res) => {
   )
     throw new ApiError(403, "You are not authorized to reschedule this appointment");
 
+  appointment.availability = availability
   appointment.date = date;
   appointment.timeslot = timeslot;
   appointment.reason = reason;

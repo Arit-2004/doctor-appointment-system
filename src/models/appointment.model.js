@@ -17,23 +17,23 @@ const appointmentSchema = new Schema(
 
     date: {
       type: Date,
-      required: true,
+      required : true
     },
 
     status: {
       type: String,
-      enum: ["pending", "approved", "cancelled"],
+      enum: ["pending", "approved", "cancelled" , "rescheduled"],
       default: "pending",
     },
 
     timeslot: {
       start: {
-        type: Date,
-        required: true,
+       type : String,
+       ref : "Doctor"
       },
       end: {
-        type: Date,
-        required: true,
+        type : String,
+        ref : "Doctor"
       },
     },
 
