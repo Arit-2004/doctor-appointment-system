@@ -2,23 +2,15 @@ import mongoose, { Schema } from "mongoose";
 import mongooseaggregatePaginate from "mongoose-aggregate-paginate-v2"
 
 const feedbackSchema = new Schema({
-    
-    patientId : {
-        type : Schema.Types.ObjectId,
-        ref : "User",
-        required : true
-    },
-
-    doctorId : {
-        type : Schema.Types.ObjectId,
-        ref : "Doctor",
-        required : true
-    },
-
-    content : {
+    name : {
         type : String,
-        required : true
-    }
+        required : "Anonymous"
+    },
+   content : {
+       type : String,
+       required : true
+   },
+
 },
 {
     timestamps : true
