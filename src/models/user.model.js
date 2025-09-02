@@ -29,6 +29,11 @@ const userSchema = new Schema(
       default: "patient",
       required: true,
     },
+    doctorId: {
+      type: String,
+      unique: true, // Ensure each doctorId is unique
+      sparse: true, // Allows null for patients/admins
+    },
     password: {
       type: String,
       required: true,
@@ -61,13 +66,13 @@ userSchema.methods.isPasswordCorrect = async function (password) {
  * @returns {string} Signed JWT access token
  */
 userSchema.methods.generateAccessToken = function () {
-  console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
   return jwt.sign(
     {
       _id: this._id,
       email: this.email,
       fullname: this.fullname,
       role: this.role,
+      doctorId: this.doctorId, // include doctorId if available
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
