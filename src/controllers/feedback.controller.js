@@ -4,14 +4,16 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Feedback } from "../models/feedback.model.js";
 
 const createFeedback = asyncHandler(async(req , res)=>{
-    const {name , content} = req.body;
-    if(!content){
-        throw new ApiError(403 , "Enter the name and content");
-    }
+    const {name , email , subject , message} = req.body;
+    if(!name || !subject || subject.trim() === "" || name.trim() === "" || !message || message.trim() === "" || !email || email.trim() === ""){
+    throw new ApiError(403 , "Enter the name and content");
+}
 
     const feedback = await Feedback.create({
-        name : name || "Anonymous",
-        content
+        name,
+        email,
+        subject,
+        message
     })
 
     return res
@@ -72,8 +74,21 @@ const deleteFeedback = asyncHandler(async(req , res)=>{
     )
 })
 
+const getFeedbacks = asyncHandler(async (req, res) => {
+    const feedbacks = await Feedback.find();
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        feedbacks,
+        "Feedbacks retrieved successfully"
+      )
+    );
+  });
+
+
 export{
     createFeedback,
     updateFeedback,
-    deleteFeedback
+    deleteFeedback,
+    getFeedbacks
 }

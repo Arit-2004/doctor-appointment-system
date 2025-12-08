@@ -25,14 +25,12 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["patient", "doctor", "admin"],
-      default: "patient",
+      enum: ["user", "doctor", "admin"],
+      default: "user",
       required: true,
     },
     doctorId: {
       type: String,
-      unique: true, // Ensure each doctorId is unique
-      sparse: true, // Allows null for patients/admins
     },
     password: {
       type: String,
