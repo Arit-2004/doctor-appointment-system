@@ -1,6 +1,26 @@
-import React from 'react'
+import React, { use, useState } from 'react'
+
+
+import axios from 'axios';
+import { useEffect } from 'react';
 
 const CustomerExperience = () => {
+
+  const [feedbacks , setFeedbacks] = useState([])
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/v1/feedbacks");
+        setFeedbacks(response.data.data);
+      } catch (error) {
+        console.error('Error fetching feedbacks:', error);
+      }
+    };
+
+    fetchFeedbacks();
+  }, []); 
+
   return (
    <>
    <div className='w-full flex justify-center'>
@@ -14,67 +34,18 @@ const CustomerExperience = () => {
     Our Customer Experience !
   </h2>
   <div className ="card-3d mt-4 mb-4 relative">
-    <div className ="flex flex-col items-center absolute">
-      <p className ="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className ="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
+    {feedbacks.length === 0 ? (
+            <p className="text-center text-gray-700">No feedback available yet.</p>
+          ) : (
+            feedbacks.slice(0, 10).map((fb, index) => (
+              <div key={index} className="p-3 rounded-xl bg-white shadow">
+                <p className="text-[18px] font-bold text-center">{fb.name}</p>
+                <p className="text-[10px] font-[400] text-center">{fb.message}</p>
+              </div>
+            ))
+          )}
     </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className ="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-    <div>
-      <p className ="text-[18px] font-bold mt-2 text-center">sdsadsd</p>
-      <p className ="text-[10px] font-[400] text-center">
-        lorem sdsfcs sdasdf adv dsav df
-      </p>
-    </div>
-  </div>
+   
 </div>
   </div>
 

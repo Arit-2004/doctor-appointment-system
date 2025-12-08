@@ -1,91 +1,151 @@
-import React from 'react'
-import {Link} from "react-router-dom"
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function SignUp() {
-  return (
-    <>
+  const [fullname, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [doctorId, setDoctorId] = useState("");
+  const navigate = useNavigate();
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        username,
+        fullname,
+        email,
+        role,
+        password,
+      };
+
+      if (role === "doctor") payload.doctorId = doctorId;
+
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/users/register",
+        payload,
+        { withCredentials: true }
+      );
+
+      const userData = response.data?.data || {
+        username,
+        name: fullname,
+        email,
+        role,
+      };
+
+      // ✅ Save auth data
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // ✅ Notify Navbar to re-render instantly
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("userUpdate"));
+
+      // ✅ Success toast
+      toast.success(`🎉 Welcome, ${fullname || username}!`, {
+        position: "top-center",
+        autoClose: 2000,
+      });
+
+      // Redirect after delay
+      setTimeout(() => navigate("/"), 2000);
+    } catch (error) {
+      console.error("Signup failed:", error.response?.data || error.message);
+      const message =
+        error.response?.data?.message ||
+        "❌ Registration failed. Please try again!";
+      toast.error(message, {
+        position: "top-center",
+        autoClose: 2500,
+      });
+    }
+  };
+
+  return (
     <div className="flex flex-col justify-center items-center">
       <Navbar />
 
-      <div className="w-[290px] mt-14 min-h-[320px] py-5 shadow-md rounded-xl border-2 bg-gray-200">
-        <form className="flex mt-2 flex-col items-center gap-6">
-          <p className="form-title text-xl font-bold">Sign up to your account</p>
+      <div className="w-[320px] mt-14 min-h-[360px] py-5 shadow-xl rounded-2xl border bg-gray-100">
+        <form
+          className="flex mt-2 flex-col items-center gap-5"
+          onSubmit={handleSubmit}
+        >
+          <p className="text-xl font-bold text-indigo-700">Create an Account</p>
 
-          <div className="input-container flex relative items-center">
-            <input placeholder="Enter name.." className="email h-8 px-3 rounded-xl shadow-md" />
-          </div>
+          <input
+            placeholder="Enter full name"
+            className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+            value={fullname}
+            onChange={(e) => setFullName(e.target.value)}
+          />
 
-          <div className="input-container flex relative items-center">
-            <input placeholder="Enter contact No.." className="email h-8 px-3 rounded-xl shadow-md" />
-            <span className="absolute top-1 right-3">
-              <i className="fa-sharp-duotone fa-solid fa-phone opacity-50"></i>
-            </span>
-          </div>
+          <input
+            placeholder="Enter Username"
+            className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
 
-          <div className="input-container flex relative items-center">
-            <input placeholder="Enter email" type="email" className="email h-8 px-3 rounded-xl shadow-md" />
-            <span className="absolute top-2 right-3">
-              <svg
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-[1rem] h-[1rem] text-[#9CA3AF]"
-              >
-                <path
-                  d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-          </div>
+          <input
+            placeholder="Enter email"
+            type="email"
+            className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <div className="input-container flex relative items-center">
-            <input placeholder="Enter password" type="password" className="password h-8 px-3 rounded-xl shadow-md" />
-            <span className="absolute top-2 right-3">
-              <svg
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-[1rem] h-[1rem] text-[#9CA3AF]"
-              >
-                <path
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-          </div>
+          <input
+            placeholder="Enter password"
+            type="password"
+            className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <select
+            className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value="user">User</option>
+            <option value="doctor">Doctor</option>
+          </select>
+
+          {role === "doctor" && (
+            <input
+              placeholder="Enter Doctor ID"
+              className="w-[80%] h-9 px-3 rounded-xl shadow-md outline-none focus:ring-2 focus:ring-indigo-500"
+              value={doctorId}
+              onChange={(e) => setDoctorId(e.target.value)}
+            />
+          )}
 
           <button
-            className="block py-3 px-5 bg-indigo-600 text-white text-sm font-medium w-[80%] rounded-lg uppercase hover:scale-90"
+            className="py-2 px-5 bg-indigo-600 text-white font-medium w-[80%] rounded-xl uppercase hover:bg-indigo-700 hover:scale-95 transition-all duration-200"
             type="submit"
           >
             Sign Up
           </button>
 
-          <p className="account text-gray-500 text-sm text-center">
-            Already have account?
-            <a href="/signin" className="underline text-blue-500"> Sign in</a>
+          <p className="text-gray-600 text-sm">
+            Already have an account?{" "}
+            <Link to="/signin" className="text-indigo-600 underline">
+              Sign In
+            </Link>
           </p>
         </form>
       </div>
-      </div>
-    </>
-  )
+    </div>
+  );
 }
 
-export default SignUp
+export default SignUp;
