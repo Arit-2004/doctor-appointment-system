@@ -1,89 +1,154 @@
-import React from 'react'
-import { Router } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import Navbar from "../components/Navbar";
 
 function Appointment() {
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [formData, setFormData] = useState({
+    doctorId: "",
+    date: "",
+    availability: "",
+    reason: "",
+  });
+
+  // 🔹 Fetch doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8000/api/v1/users/doctors/all"
+        );
+        setDoctors(res.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
+  // ✅ Handle input change
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // 🔹 Submit appointment
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem("accessToken"); // must match backend response key
+      if (!token) {
+        alert("You must be logged in to book an appointment!");
+        return;
+      }
+      console.log("Token:", token);
+      await axios.post(
+        "http://localhost:8000/api/v1/appointments/book",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Appointment booked successfully ✅");
+      setFormData({
+        doctorId: "",
+        date: "",
+        availability: "",
+        reason: "",
+      });
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Booking failed ❌");
+    }
+  };
+
   return (
-    <>
     <div className="flex flex-col justify-center items-center">
       <Navbar />
 
-
       <div className="w-[290px] mt-14 min-h-[320px] py-5 shadow-md rounded-xl border-2 bg-gray-200">
-        <form className="flex mt-2 flex-col items-center gap-6">
-          <p className="form-title text-xl font-bold">Book Appointment</p>
+        <form
+          onSubmit={handleSubmit}
+          className="flex mt-2 flex-col items-center gap-6"
+        >
+          <p className="text-xl font-bold">Book Appointment</p>
 
-          <div className="input-container flex relative items-center">
-            <input
-              type="text"
-              placeholder="Enter name.."
-              className="h-8 px-3 rounded-xl shadow-md"
-            />
-          </div>
+          {/* Doctor Dropdown */}
+          <select
+            name="doctorId"
+            value={formData.doctorId}
+            onChange={handleChange}
+            className="h-8 px-3 rounded-xl text-gray-600 w-[201px] shadow-md"
+            required
+          >
+            <option value="">
+              {loading ? "Loading doctors..." : "Select Doctor"}
+            </option>
+            {!loading && doctors.length === 0 && (
+              <option value="" disabled>
+                No doctors available
+              </option>
+            )}
+            {doctors.map((doctor) => (
+              <option key={doctor._id} value={doctor._id}>
+                {doctor.fullname} (ID: {doctor.doctorId})
+              </option>
+            ))}
+          </select>
 
-          <div className="input-container flex relative items-center">
-            <input
-              type="text"
-              placeholder="Enter contact No.."
-              className="h-8 px-3 rounded-xl shadow-md"
-            />
-            <span className="absolute top-1 right-3">
-              <i className="fa-solid fa-phone opacity-50"></i>
-            </span>
-          </div>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            className="h-8 px-3 w-[201px] rounded-xl shadow-md"
+            required
+          />
 
-          <div className="input-container flex relative items-center">
-            <select
-              name="department"
-              className="h-8 px-3 rounded-xl text-gray-500 w-[201px] shadow-md"
-            >
-              <option value="">Choose Department</option>
-              <option value="neurology">Neurology</option>
-              <option value="surgical">Surgical</option>
-              <option value="dental">Dental</option>
-              <option value="ophthalmology">Ophthalmology</option>
-              <option value="cardiology">Cardiology</option>
-              <option value="gynecology">Gynecology</option>
-            </select>
-          </div>
+          <select
+            name="availability"
+            value={formData.availability}
+            onChange={handleChange}
+            className="h-8 px-3 rounded-xl w-[201px] shadow-md"
+            required
+          >
+            <option value="">Select Availability</option>
+            <option value="morning">Morning</option>
+            <option value="afternoon">Afternoon</option>
+            <option value="evening">Evening</option>
+          </select>
 
-          <div className="input-container flex relative items-center">
-            <select
-              name="doctor"
-              className="h-8 px-3 rounded-xl text-gray-500 w-[201px] shadow-md"
-            >
-              <option value="">Select Doctor</option>
-              <option value="doctor1">Dr. A</option>
-              <option value="doctor2">Dr. B</option>
-              <option value="doctor3">Dr. C</option>
-            </select>
-          </div>
-
-          <div className="input-container flex relative items-center">
-            <input
-              type="time"
-              className="h-8 px-3 w-[201px] rounded-xl shadow-md"
-              />
-          </div>
+          <input
+            type="text"
+            name="reason"
+            placeholder="Reason for appointment"
+            value={formData.reason}
+            onChange={handleChange}
+            className="h-8 px-3 w-[201px] rounded-xl shadow-md"
+            required
+          />
 
           <button
-            className="block py-3 px-5 bg-indigo-600 text-white text-sm font-medium w-[80%] rounded-lg uppercase hover:scale-90 transition-transform"
             type="submit"
-            >
+            className="py-3 px-5 bg-indigo-600 text-white text-sm font-medium w-[80%] rounded-lg uppercase hover:scale-90 transition-transform"
+          >
             Get Appointment
           </button>
-
-          <p className="account text-gray-500 text-sm text-center">
-            Already have an account?{' '}
-            <a href="/signin" className="underline text-blue-500">
-              Sign in
-            </a>
-          </p>
         </form>
       </div>
-         </div>     
-    </>
-  )
+    </div>
+  );
 }
 
-export default Appointment
+export default Appointment;
