@@ -63,7 +63,7 @@ const createDoctorProfile = asyncHandler(async (req, res) => {
 
 
 const getAllDoctors = asyncHandler(async(req , res)=>{
-    const doctors = await Doctor.find().populate("owner" , "fullname email username")
+    const doctors = await Doctor.find().populate("owner" , "fullName email username")
     if(!doctors){
         throw new ApiError(404 , "Error to fetched doctors");
     }

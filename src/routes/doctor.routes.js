@@ -22,7 +22,7 @@ router.post(
 );
 
 
-router.get("/", getAllDoctors);
+router.get("/all", getAllDoctors);
 
 router.get("/:id/specalization", getDoctorBySpecalization);
 

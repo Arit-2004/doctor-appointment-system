@@ -6,7 +6,7 @@ import { Appointment } from "../models/appointment.model.js";
 
 const bookAppointment = asyncHandler(async (req, res) => {
   const patientId = req.user?._id;
-  const { doctorId, date , availability, timeslot, reason } = req.body;
+  const { doctorId , date , availability , reason} = req.body;
 
   if (!patientId) throw new ApiError(403, "No patient found");
   if (!doctorId || !date || !availability || !reason)
@@ -17,8 +17,8 @@ const bookAppointment = asyncHandler(async (req, res) => {
     doctorId,
     date,
     availability,
-    timeslot,
     reason,
+    status : "pending"
   });
 
   return res.status(200).json(

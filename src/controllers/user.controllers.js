@@ -38,7 +38,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "All credentials are required");
   }
 
-  // Doctor must provide doctorId
   if (role === "doctor" && !doctorId) {
     throw new ApiError(400, "Doctor ID is required for doctors");
   }
@@ -64,10 +63,6 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  if (!createdUser) {
-    throw new ApiError(400, "User is not created");
-  }
-
   return res
     .status(200)
     .json(new ApiResponse(200, createdUser, "User created successfully"));
@@ -89,7 +84,6 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exist");
   }
 
-  // If doctor, must provide doctorId
   if (user.role === "doctor" && !doctorId) {
     throw new ApiError(400, "Doctor ID is required for doctors to log in");
   }
@@ -121,18 +115,20 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, loggedInUser, "User logged in successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken, refreshToken },
+        "User logged in successfully"
+      )
+    );
 });
 
 // 🔹 Logout User
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
-    {
-      $unset: {
-        refreshToken: 1,
-      },
-    },
+    { $unset: { refreshToken: 1 } },
     { new: true }
   );
 
@@ -153,7 +149,6 @@ const logoutUser = asyncHandler(async (req, res) => {
 // 🔹 Change Password
 const userChangepassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
-
   const user = await User.findById(req.user?._id);
 
   const isPasswordValid = await user.isPasswordCorrect(oldPassword);
@@ -178,22 +173,14 @@ const updateUserDetails = asyncHandler(async (req, res) => {
   }
 
   const existedUser = await User.findOne({ email });
-  if (
-    existedUser &&
-    existedUser._id.toString() !== req.user?._id.toString()
-  ) {
+  if (existedUser && existedUser._id.toString() !== req.user?._id.toString()) {
     throw new ApiError(400, "Email is already in use by another account");
   }
 
   const updateUser = await User.findByIdAndUpdate(
     req.user?._id,
-    {
-      $set: { fullname, email },
-    },
-    {
-      new: true,
-      runValidators: true,
-    }
+    { $set: { fullname, email } },
+    { new: true, runValidators: true }
   ).select("-password");
 
   return res
@@ -208,6 +195,19 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
+// 🔹 Get All Doctors
+const getAllDoctors = asyncHandler(async (req, res) => {
+  const doctors = await User.find({ role: "doctor" });
+
+  if (!doctors || doctors.length === 0) {
+    throw new ApiError(404, "No doctors found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, doctors, "Doctors fetched successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -215,4 +215,5 @@ export {
   userChangepassword,
   updateUserDetails,
   getCurrentUser,
+  getAllDoctors,
 };

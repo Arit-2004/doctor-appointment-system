@@ -11,7 +11,7 @@ const appointmentSchema = new Schema(
 
     doctorId: {
       type: Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "User",
       required: true,
     },
 
@@ -26,15 +26,10 @@ const appointmentSchema = new Schema(
       default: "pending",
     },
 
-    timeslot: {
-      start: {
-       type : String,
-       ref : "Doctor"
-      },
-      end: {
-        type : String,
-        ref : "Doctor"
-      },
+    availability: {
+      type: String,
+      enum: ["morning", "afternoon", "evening"],
+      required: true,
     },
 
     reason: {
