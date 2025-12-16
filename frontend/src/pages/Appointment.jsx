@@ -18,7 +18,7 @@ function Appointment() {
     const fetchDoctors = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8000/api/v1/users/doctors/all"
+          `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/doctors/all`
         );
         setDoctors(res.data.data || []);
       } catch (error) {
@@ -51,7 +51,7 @@ function Appointment() {
       }
       console.log("Token:", token);
       await axios.post(
-        "http://localhost:8000/api/v1/appointments/book",
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/appointments/book`,
         formData,
         {
           headers: {

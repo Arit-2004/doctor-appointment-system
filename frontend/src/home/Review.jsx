@@ -13,7 +13,7 @@ const FeedbackForm = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8000/api/v1/feedbacks/", formData);
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/feedbacks/`, formData);
       console.log("Feedback submitted successfully:", response.data);
       alert("Feedback submitted successfully!");
       e.target.reset();

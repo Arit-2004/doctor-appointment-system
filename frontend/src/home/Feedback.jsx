@@ -11,7 +11,7 @@ const CustomerExperience = () => {
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/v1/feedbacks");
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/feedbacks`);
         setFeedbacks(response.data.data);
       } catch (error) {
         console.error('Error fetching feedbacks:', error);

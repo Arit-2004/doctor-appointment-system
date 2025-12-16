@@ -28,7 +28,7 @@ function SignUp() {
       if (role === "doctor") payload.doctorId = doctorId;
 
       const response = await axios.post(
-        "http://localhost:8000/api/v1/users/register",
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/register`,
         payload,
         { withCredentials: true }
       );

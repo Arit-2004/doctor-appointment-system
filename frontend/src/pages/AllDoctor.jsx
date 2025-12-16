@@ -11,7 +11,7 @@ const AllDoctors = () => {
     const fetchDoctors = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/users/doctors/all"
+          `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/doctors/all`
         );
         setDoctors(response.data.data || []);
       } catch (error) {
