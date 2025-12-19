@@ -28,7 +28,7 @@ function Department() {
         </div>
         <div className="lg:w-[200px] sm:w-full shadow-md flex flex-col gap-2 justify-center items-center lg:h-[130px] h-40 !bg-gray-100 hover:text-white hover:!bg-blue-500  text-xl font-semibold lg:mb-[10px]">
           <i className="fa-solid fa-stethoscope text-2xl "></i>
-          <p>Gianology</p>
+          <p>Gynaecology</p>
         </div>
       </div>
     </div>
